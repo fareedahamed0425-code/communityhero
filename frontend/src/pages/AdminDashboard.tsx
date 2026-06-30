@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Users, Trash2, Edit2, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, AlertTriangle, ShieldAlert, CheckCircle, Trash2 } from 'lucide-react';
 import { getIssues, updateIssueStatus, deleteIssue } from '../services/issueService';
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
 
