@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="120" fill="#006A60"/>
+  <!-- Map Pin -->
+  <path d="M256 120C194.14 120 144 170.14 144 232C144 316 256 416 256 416C256 416 368 316 368 232C368 170.14 317.86 120 256 120Z" fill="#A0F0E2"/>
+  <!-- Inner Circle -->
+  <circle cx="256" cy="232" r="48" fill="#006A60"/>
+  <!-- Optional Sparkle -->
+  <path d="M360 140 L370 120 L380 140 L400 150 L380 160 L370 180 L360 160 L340 150 Z" fill="#FFD700"/>
+</svg>
