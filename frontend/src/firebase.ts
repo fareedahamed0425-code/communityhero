@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC4x9Gf4t_IXf2iJRl035iklr1aJ18RWuI",
-  authDomain: "apollo-hemodialysis-management.firebaseapp.com",
-  projectId: "apollo-hemodialysis-management",
-  storageBucket: "apollo-hemodialysis-management.firebasestorage.app",
-  messagingSenderId: "107751276849",
-  appId: "1:107751276849:web:bd47b9ba0201cf98e47010",
-  measurementId: "G-8XS8EH1LCD"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
