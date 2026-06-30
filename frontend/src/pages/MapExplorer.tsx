@@ -89,8 +89,8 @@ const MapExplorer = () => {
         <div className="flex-1 z-0 relative">
           <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
             <TileLayer
-              attribution='&copy; OpenStreetMap'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; Google Maps'
+              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
             />
             <RecenterMap lat={center[0]} lng={center[1]} />
             

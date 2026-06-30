@@ -68,8 +68,8 @@ const LocationPicker: React.FC<Props> = ({ onNext, onBack }) => {
         ) : (
           <MapContainer center={position as [number, number]} zoom={15} style={{ height: '100%', width: '100%' }}>
             <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; Google Maps'
+              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
             />
             <LocationMarker />
           </MapContainer>
