@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { type User, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import { syncUser } from '../services/userService';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser && currentUser.email) {
+        syncUser(currentUser.email, currentUser.displayName).catch(e => {
+          console.error("Failed to sync user to PostgreSQL", e);
+        });
+      }
+      
       setLoading(false);
     });
 

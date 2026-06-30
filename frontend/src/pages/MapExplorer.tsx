@@ -13,11 +13,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to dynamically change map center
+// Custom icon for live user location (glowing blue dot)
+const userIcon = new L.DivIcon({
+  className: 'user-location-marker',
+  html: '<div style="background-color: #3b82f6; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);"></div>',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+// Component to dynamically change map center smoothly
 const RecenterMap = ({ lat, lng }: { lat: number, lng: number }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng]);
+    map.flyTo([lat, lng], map.getZoom(), { duration: 1.5 });
   }, [lat, lng, map]);
   return null;
 };
@@ -26,13 +34,14 @@ const MapExplorer = () => {
   const [issues, setIssues] = useState<(IssueData & { id: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [center, setCenter] = useState<[number, number]>([12.9716, 77.5946]); // Default: Bangalore
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
   useEffect(() => {
     const fetchIssues = async () => {
       try {
         const data = await getIssues();
         // Filter out issues that don't have valid coordinates
-        const mappableIssues = data.filter(i => i.latitude !== null && i.longitude !== null);
+        const mappableIssues = data.filter((i: any) => i.latitude !== null && i.longitude !== null);
         setIssues(mappableIssues);
 
         // Center map on the latest issue if there are any, else try to get user's location
@@ -51,12 +60,34 @@ const MapExplorer = () => {
       }
     };
     fetchIssues();
+
+    // Live tracking of user location
+    let watchId: number;
+    if ("geolocation" in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          setUserLocation([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => console.log("Geolocation watch error:", err),
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+      );
+    }
+
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   const handleLocateMe = () => {
-    if ("geolocation" in navigator) {
+    if (userLocation) {
+      setCenter(userLocation);
+    } else if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setCenter([pos.coords.latitude, pos.coords.longitude])
+        (pos) => {
+          const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+          setUserLocation(loc);
+          setCenter(loc);
+        }
       );
     }
   };
@@ -89,10 +120,18 @@ const MapExplorer = () => {
         <div className="flex-1 z-0 relative">
           <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
             <TileLayer
-              attribution='&copy; Google Maps'
-              url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <RecenterMap lat={center[0]} lng={center[1]} />
+            
+            {userLocation && (
+              <Marker position={userLocation} icon={userIcon}>
+                <Popup className="custom-popup">
+                  <div className="font-headline font-bold text-sm text-primary">You are here</div>
+                </Popup>
+              </Marker>
+            )}
             
             {issues.map((issue) => (
               <Marker key={issue.id} position={[issue.latitude!, issue.longitude!]}>

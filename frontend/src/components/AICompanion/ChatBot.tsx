@@ -22,6 +22,12 @@ const ChatBot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    document.addEventListener('open-chatbot', handleOpen);
+    return () => document.removeEventListener('open-chatbot', handleOpen);
+  }, []);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesEndRef.current) {

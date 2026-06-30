@@ -59,6 +59,8 @@ class Issue(Base):
     ai_department_recommendation = Column(String(100))
     public_safety_risk = Column(Boolean, default=False)
     
+    image_url = Column(String)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

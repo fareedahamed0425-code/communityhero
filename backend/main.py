@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from models.database import engine, Base
+from api.routes import router as api_router
+
+# Create database tables (Requires PostGIS if geometry is used)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Community Hero API", version="1.0.0")
 
@@ -16,6 +20,8 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Community Hero API"}
+
+app.include_router(api_router, prefix="/api")
 
 @app.get("/health")
 def health_check():

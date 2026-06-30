@@ -59,7 +59,7 @@ const ReportWizard = () => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-10 min-h-[60vh] flex flex-col justify-center">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-10 min-h-[50vh] sm:min-h-[60vh] flex flex-col justify-center mx-2 sm:mx-0">
       {step === 1 && <ImageCapture onNext={handleImageCaptured} />}
       {step === 2 && <LocationPicker onNext={handleLocationConfirmed} onBack={() => setStep(1)} />}
       {step === 3 && (
