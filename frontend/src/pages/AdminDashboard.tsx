@@ -9,7 +9,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [expandedIssueId, setExpandedIssueId] = useState<string | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -195,10 +195,11 @@ const AdminDashboard = () => {
                 </tr>
               ) : activeTab === 'issues' ? (
                 issues.map(issue => (
-                  <React.Fragment key={issue.id || issue.issue_id}>
+                issues.map(issue => (
                   <tr 
+                    key={issue.id || issue.issue_id}
                     className="hover:bg-surface-container-lowest/50 transition-colors cursor-pointer"
-                    onClick={() => setExpandedIssueId(expandedIssueId === (issue.id || issue.issue_id) ? null : (issue.id || issue.issue_id))}
+                    onClick={() => setSelectedIssue(issue)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-on-surface">{issue.title || issue.issue_type}</div>
@@ -242,36 +243,6 @@ const AdminDashboard = () => {
                       </button>
                     </td>
                   </tr>
-                  
-                  {expandedIssueId === (issue.id || issue.issue_id) && (
-                    <tr className="bg-surface-container-lowest/30 border-b border-surface-container">
-                      <td colSpan={5} className="px-6 py-6">
-                        <div className="flex flex-col sm:flex-row gap-6">
-                          {issue.image_url && (
-                            <img 
-                              src={issue.image_url} 
-                              alt="Issue" 
-                              className="w-full sm:w-1/3 max-w-sm h-auto object-cover rounded-xl shadow-sm border border-outline-variant" 
-                            />
-                          )}
-                          <div className="flex-1">
-                            <h4 className="font-label font-bold text-on-surface text-lg mb-2">Issue Description</h4>
-                            <p className="font-body text-on-surface-variant text-base whitespace-pre-wrap">
-                              {issue.description || 'No additional description provided by the citizen.'}
-                            </p>
-                            
-                            {issue.latitude && issue.longitude && (
-                              <div className="mt-4 p-3 bg-surface-container-low rounded-lg inline-block">
-                                <span className="font-label font-bold text-on-surface text-sm">Location: </span>
-                                <span className="font-body text-on-surface-variant text-sm">{issue.latitude.toFixed(5)}, {issue.longitude.toFixed(5)}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  </React.Fragment>
                 ))
               ) : (
                 users.map(user => (
@@ -314,6 +285,72 @@ const AdminDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Issue Details Modal */}
+      {selectedIssue && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedIssue(null)}>
+          <div 
+            className="bg-surface-container-lowest rounded-2xl shadow-xl border border-surface-container w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-headline font-bold text-on-surface">Issue Details</h2>
+                <button 
+                  onClick={() => setSelectedIssue(null)}
+                  className="text-on-surface-variant hover:text-on-surface"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {selectedIssue.image_url && (
+                  <img 
+                    src={selectedIssue.image_url} 
+                    alt="Issue" 
+                    className="w-full h-auto max-h-80 object-contain bg-surface-container-low rounded-xl border border-outline-variant" 
+                  />
+                )}
+                
+                <div>
+                  <h4 className="font-label font-bold text-on-surface text-sm uppercase tracking-wider mb-1">Title & Type</h4>
+                  <p className="font-body text-on-surface text-lg">{selectedIssue.title || selectedIssue.issue_type}</p>
+                </div>
+
+                <div>
+                  <h4 className="font-label font-bold text-on-surface text-sm uppercase tracking-wider mb-1">Description</h4>
+                  <p className="font-body text-on-surface-variant text-base whitespace-pre-wrap bg-surface-container-low p-4 rounded-xl">
+                    {selectedIssue.description || 'No additional description provided by the citizen.'}
+                  </p>
+                </div>
+                
+                {selectedIssue.latitude && selectedIssue.longitude && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-label font-bold text-on-surface text-sm uppercase tracking-wider">Location:</span>
+                    <a 
+                      href={`https://www.google.com/maps?q=${selectedIssue.latitude},${selectedIssue.longitude}`} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="font-body text-primary hover:underline text-sm font-semibold"
+                    >
+                      {selectedIssue.latitude.toFixed(5)}, {selectedIssue.longitude.toFixed(5)} 📍
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="p-4 bg-surface-container-low border-t border-surface-container flex justify-end rounded-b-2xl">
+              <button 
+                onClick={() => setSelectedIssue(null)}
+                className="px-6 py-2 bg-primary text-on-primary rounded-xl font-label font-bold hover:bg-surface-tint transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
