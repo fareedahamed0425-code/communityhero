@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, AlertTriangle, ShieldAlert, CheckCircle, Trash2 } from 'lucide-react';
 import { getIssues, updateIssueStatus, deleteIssue } from '../services/issueService';
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
@@ -194,7 +194,6 @@ const AdminDashboard = () => {
                   <td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant animate-pulse">Loading...</td>
                 </tr>
               ) : activeTab === 'issues' ? (
-                issues.map(issue => (
                 issues.map(issue => (
                   <tr 
                     key={issue.id || issue.issue_id}
