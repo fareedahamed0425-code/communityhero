@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, updateProfile, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { syncUser } from '../services/userService';
 
 const Signup: React.FC = () => {
   const [name, setName] = useState('');
