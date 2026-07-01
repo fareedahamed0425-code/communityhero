@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithRedirect } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUser } from '../services/userService';
@@ -31,13 +31,9 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       setError('');
-      const result = await signInWithPopup(auth, googleProvider);
-      
-      if (result.user && result.user.email) {
-        await syncUser(result.user.email, result.user.displayName);
-      }
-      
-      navigate('/dashboard');
+      await signInWithRedirect(auth, googleProvider);
+      // We don't navigate or manually sync here because the redirect navigates away, 
+      // and AuthContext handles the user sync once it redirects back.
     } catch (err: any) {
       setError(err.message || 'Failed to login with Google');
     }
