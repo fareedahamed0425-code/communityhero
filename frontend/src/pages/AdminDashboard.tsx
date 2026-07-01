@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, ShieldAlert, CheckCircle, Trash2 } from 'lucide-react';
 import { getIssues, updateIssueStatus, deleteIssue } from '../services/issueService';
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
@@ -9,6 +9,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [expandedIssueId, setExpandedIssueId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -194,7 +195,11 @@ const AdminDashboard = () => {
                 </tr>
               ) : activeTab === 'issues' ? (
                 issues.map(issue => (
-                  <tr key={issue.id || issue.issue_id} className="hover:bg-surface-container-lowest/50 transition-colors">
+                  <React.Fragment key={issue.id || issue.issue_id}>
+                  <tr 
+                    className="hover:bg-surface-container-lowest/50 transition-colors cursor-pointer"
+                    onClick={() => setExpandedIssueId(expandedIssueId === (issue.id || issue.issue_id) ? null : (issue.id || issue.issue_id))}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-bold text-on-surface">{issue.title || issue.issue_type}</div>
                       <div className="text-xs text-on-surface-variant">{(issue.id || issue.issue_id)?.slice(0, 8)}</div>
@@ -210,6 +215,7 @@ const AdminDashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select 
                         value={issue.status || 'reported'}
+                        onClick={(e) => e.stopPropagation()}
                         onChange={(e) => handleUpdateIssueStatus(issue.id || issue.issue_id, e.target.value)}
                         className="bg-surface-container-low border border-outline-variant text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2"
                       >
@@ -225,7 +231,10 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <button 
-                        onClick={() => handleDeleteIssue(issue.id || issue.issue_id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteIssue(issue.id || issue.issue_id);
+                        }}
                         className="p-2 bg-error/10 hover:bg-error/20 text-error rounded-lg transition-colors ml-2"
                         title="Delete Issue"
                       >
@@ -233,6 +242,36 @@ const AdminDashboard = () => {
                       </button>
                     </td>
                   </tr>
+                  
+                  {expandedIssueId === (issue.id || issue.issue_id) && (
+                    <tr className="bg-surface-container-lowest/30 border-b border-surface-container">
+                      <td colSpan={5} className="px-6 py-6">
+                        <div className="flex flex-col sm:flex-row gap-6">
+                          {issue.image_url && (
+                            <img 
+                              src={issue.image_url} 
+                              alt="Issue" 
+                              className="w-full sm:w-1/3 max-w-sm h-auto object-cover rounded-xl shadow-sm border border-outline-variant" 
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-label font-bold text-on-surface text-lg mb-2">Issue Description</h4>
+                            <p className="font-body text-on-surface-variant text-base whitespace-pre-wrap">
+                              {issue.description || 'No additional description provided by the citizen.'}
+                            </p>
+                            
+                            {issue.latitude && issue.longitude && (
+                              <div className="mt-4 p-3 bg-surface-container-low rounded-lg inline-block">
+                                <span className="font-label font-bold text-on-surface text-sm">Location: </span>
+                                <span className="font-body text-on-surface-variant text-sm">{issue.latitude.toFixed(5)}, {issue.longitude.toFixed(5)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </React.Fragment>
                 ))
               ) : (
                 users.map(user => (
