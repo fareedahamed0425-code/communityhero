@@ -69,8 +69,20 @@ export const analyzeIssueImage = async (base64DataUrl: string): Promise<AISugges
       try {
         // In case the model returns markdown JSON blocks
         const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(cleanedText);
-        return parsed as AISuggestion;
+        const parsed = JSON.parse(cleanedText) as AISuggestion;
+        
+        // Ensure values match backend enums to prevent database errors
+        const validIssueTypes = ['pothole', 'water_leakage', 'garbage', 'streetlight', 'other'];
+        const validSeverities = ['low', 'medium', 'high', 'critical'];
+        
+        if (!parsed.issue_type || !validIssueTypes.includes(parsed.issue_type.toLowerCase())) {
+          parsed.issue_type = 'other';
+        }
+        if (!parsed.severity || !validSeverities.includes(parsed.severity.toLowerCase())) {
+          parsed.severity = 'medium';
+        }
+        
+        return parsed;
       } catch (parseError) {
         console.error("Failed to parse Gemini response as JSON:", text);
         return null;

@@ -27,6 +27,17 @@ export const createIssue = async (data: IssueData) => {
         longitude: data.longitude || undefined,
     };
     
+    // Fallback: forcefully sync the user just in case they slipped through cracks (e.g. email login)
+    try {
+        await fetch(`${API_BASE_URL}/users/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: user.email, name: user.displayName || user.email.split('@')[0] })
+        });
+    } catch(err) {
+        console.warn("Fallback sync failed:", err);
+    }
+    
     const response = await fetch(`${API_BASE_URL}/issues`, {
       method: 'POST',
       headers: {
