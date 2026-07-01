@@ -35,11 +35,6 @@ const Signup: React.FC = () => {
         await updateProfile(userCredential.user, {
           displayName: name
         });
-        
-        // Force sync user to postgres immediately to close the loophole of missing user entries
-        if (userCredential.user.email) {
-          await syncUser(userCredential.user.email, name);
-        }
       }
       
       navigate('/dashboard');
@@ -55,11 +50,6 @@ const Signup: React.FC = () => {
       setError('');
       setIsLoading(true);
       const result = await signInWithPopup(auth, googleProvider);
-      
-      if (result.user && result.user.email) {
-         await syncUser(result.user.email, result.user.displayName);
-      }
-
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to sign up with Google');

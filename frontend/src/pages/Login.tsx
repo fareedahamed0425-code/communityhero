@@ -30,11 +30,7 @@ const Login: React.FC = () => {
   const handleGoogleLogin = async () => {
     try {
       setError('');
-      const result = await signInWithPopup(auth, googleProvider);
-      
-      if (result.user && result.user.email) {
-        await syncUser(result.user.email, result.user.displayName);
-      }
+      await signInWithPopup(auth, googleProvider);
       
       navigate('/dashboard');
     } catch (err: any) {
