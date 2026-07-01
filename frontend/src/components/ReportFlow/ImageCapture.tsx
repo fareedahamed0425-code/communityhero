@@ -33,19 +33,23 @@ const ImageCapture: React.FC<Props> = ({ onNext }) => {
     setCameraError('');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+        video: { facingMode: { ideal: 'environment' } } 
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
-      }
+      setIsCameraActive(true);
     } catch (err: any) {
       console.error("Camera error:", err);
       setCameraError('Unable to access camera. Please allow permissions or use file upload.');
       setIsCameraActive(false);
     }
   };
+
+  // Attach stream to video element when it becomes active
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isCameraActive]);
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {
