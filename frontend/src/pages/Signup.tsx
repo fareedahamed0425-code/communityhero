@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, updateProfile, signInWithRedirect } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUser } from '../services/userService';
@@ -55,10 +55,20 @@ const Signup: React.FC = () => {
     try {
       setError('');
       setIsLoading(true);
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      if (result.user && result.user.email) {
+         await syncUser(result.user.email, result.user.displayName);
+      }
+
+      navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign up with Google');
-      setIsLoading(false);
+      if (err.code === 'auth/popup-blocked') {
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        setError(err.message || 'Failed to sign up with Google');
+        setIsLoading(false);
+      }
     }
   };
 
