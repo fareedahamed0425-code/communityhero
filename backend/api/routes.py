@@ -48,7 +48,11 @@ def create_issue(issue: schemas.IssueCreate, db: Session = Depends(get_db)):
     # Find user
     db_user = db.query(User).filter(User.email == issue.user_email).first()
     if not db_user:
-        raise HTTPException(status_code=404, detail="User not found. Please sync user first.")
+        # Auto-create user if they don't exist in the database yet
+        db_user = User(email=issue.user_email, name=issue.user_email.split('@')[0])
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
     
     db_issue = Issue(
         reporter_id=db_user.user_id,
