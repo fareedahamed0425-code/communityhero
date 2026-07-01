@@ -56,12 +56,21 @@ const ImageCapture: React.FC<Props> = ({ onNext }) => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      let width = video.videoWidth;
+      let height = video.videoHeight;
+      const MAX_WIDTH = 1024;
+      
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
       
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
         setPreview(dataUrl);
         stopCamera();
@@ -75,7 +84,31 @@ const ImageCapture: React.FC<Props> = ({ onNext }) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setPreview(event.target.result as string);
+          const originalDataUrl = event.target.result as string;
+          const img = new Image();
+          img.onload = () => {
+            const tempCanvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_WIDTH = 1024;
+            
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+            
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const ctx = tempCanvas.getContext('2d');
+            
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              setPreview(tempCanvas.toDataURL('image/jpeg', 0.8));
+            } else {
+              setPreview(originalDataUrl);
+            }
+          };
+          img.src = originalDataUrl;
         }
       };
       reader.readAsDataURL(file);
