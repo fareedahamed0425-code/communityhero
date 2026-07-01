@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup, signInWithRedirect } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { syncUser } from '../services/userService';
@@ -39,12 +39,7 @@ const Login: React.FC = () => {
       
       navigate('/dashboard');
     } catch (err: any) {
-      if (err.code === 'auth/popup-blocked') {
-        // Fallback to redirect if popup is blocked (e.g. on mobile/in-app browsers)
-        await signInWithRedirect(auth, googleProvider);
-      } else {
-        setError(err.message || 'Failed to login with Google');
-      }
+      setError(err.message || 'Failed to login with Google');
     }
   };
 
