@@ -1,6 +1,6 @@
 import { auth } from '../firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8000/api' : 'https://communityhero-9m4z.onrender.com/api');
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8000/api' : 'https://communityhero-xpka.onrender.com/api');
 
 export interface IssueData {
   title: string;
