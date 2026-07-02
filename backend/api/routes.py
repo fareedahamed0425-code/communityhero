@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from models.database import get_db
 from models.models import User, Issue
 import schemas
+from services.duplicate_engine import DuplicateEngine
 from typing import List
 from uuid import UUID
 
@@ -96,3 +97,30 @@ def delete_issue(issue_id: UUID, db: Session = Depends(get_db)):
     db.delete(db_issue)
     db.commit()
     return {"message": "Issue deleted successfully"}
+
+@router.post("/issues/check_duplicate", response_model=List[schemas.Issue])
+async def check_duplicate(request: schemas.DuplicateCheckRequest, db: Session = Depends(get_db)):
+    engine = DuplicateEngine()
+    # Find issues within 50 meters
+    duplicates = await engine.find_duplicates(
+        db=db, 
+        latitude=request.latitude, 
+        longitude=request.longitude, 
+        issue_type=request.issue_type, 
+        radius_meters=50
+    )
+    return duplicates
+
+@router.post("/issues/{issue_id}/upvote", response_model=schemas.Issue)
+def upvote_issue(issue_id: UUID, db: Session = Depends(get_db)):
+    db_issue = db.query(Issue).filter(Issue.issue_id == issue_id).first()
+    if not db_issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+    
+    if db_issue.upvotes is None:
+        db_issue.upvotes = 0
+        
+    db_issue.upvotes += 1
+    db.commit()
+    db.refresh(db_issue)
+    return db_issue

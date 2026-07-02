@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Users, AlertTriangle, ShieldAlert, CheckCircle, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Users, AlertTriangle, ShieldAlert, CheckCircle, Trash2, Zap } from 'lucide-react';
 import { getIssues, updateIssueStatus, deleteIssue } from '../services/issueService';
 import { getUsers, updateUserRole, deleteUser } from '../services/userService';
 
@@ -11,6 +11,35 @@ const AdminDashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<any | null>(null);
 
+  const knownCriticalIds = useRef<Set<string>>(new Set());
+
+  const playAlertSound = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.5);
+    } catch (e) {
+      console.error("Audio API error", e);
+    }
+  };
+
+  // Auto poll every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,11 +49,38 @@ const AdminDashboard = () => {
           getUsers()
         ]);
         
+        const severityWeight: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+        const statusWeight: Record<string, number> = { reported: 3, ai_triaged: 3, assigned: 2, in_progress: 2, verification: 1, resolved: 0, closed: 0, reopened: 3 };
+
         issuesData.sort((a: any, b: any) => {
+          const statusA = statusWeight[(a.status || 'reported').toLowerCase()] ?? 0;
+          const statusB = statusWeight[(b.status || 'reported').toLowerCase()] ?? 0;
+          if (statusA !== statusB) return statusB - statusA;
+
+          const sevA = severityWeight[(a.severity || 'low').toLowerCase()] ?? 0;
+          const sevB = severityWeight[(b.severity || 'low').toLowerCase()] ?? 0;
+          if (sevA !== sevB) return sevB - sevA;
+
           const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : new Date(a.created_at).getTime();
           const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : new Date(b.created_at).getTime();
           return timeB - timeA;
         });
+
+        // Check for new critical issues
+        let newCriticalFound = false;
+        issuesData.forEach((issue: any) => {
+          if (issue.severity?.toLowerCase() === 'critical' && issue.status !== 'resolved' && issue.status !== 'closed') {
+            const id = issue.id || issue.issue_id;
+            if (id && !knownCriticalIds.current.has(id)) {
+              knownCriticalIds.current.add(id);
+              newCriticalFound = true;
+            }
+          }
+        });
+        
+        if (newCriticalFound && issues.length > 0) {
+          playAlertSound();
+        }
         
         setIssues(issuesData);
         setUsers(usersData);
@@ -229,7 +285,20 @@ const AdminDashboard = () => {
                         <option value="reopened">Reopened</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <td className="px-6 py-4 whitespace-nowrap text-right flex justify-end items-center h-full">
+                      {issue.severity === 'critical' && issue.status !== 'resolved' && issue.status !== 'closed' && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUpdateIssueStatus(issue.id || issue.issue_id, 'resolved');
+                          }}
+                          className="px-3 py-1.5 bg-error text-white hover:bg-red-700 rounded-lg transition-colors ml-2 font-bold text-xs flex items-center shadow-sm"
+                          title="Quick Resolve"
+                        >
+                          <Zap className="h-3 w-3 mr-1" />
+                          Fix
+                        </button>
+                      )}
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();

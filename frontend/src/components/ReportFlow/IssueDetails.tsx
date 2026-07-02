@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import { type AISuggestion } from '../../services/aiService';
 
 interface Props {
@@ -16,6 +16,7 @@ const IssueDetails: React.FC<Props> = ({ onSubmit, onBack, isSubmitting, aiSugge
     description: '',
     issue_type: 'pothole',
     severity: 'medium',
+    is_emergency: false,
   });
   
   const [autoFilled, setAutoFilled] = useState(false);
@@ -28,6 +29,7 @@ const IssueDetails: React.FC<Props> = ({ onSubmit, onBack, isSubmitting, aiSugge
         description: aiSuggestion.description,
         issue_type: aiSuggestion.issue_type.toLowerCase(),
         severity: aiSuggestion.severity.toLowerCase(),
+        is_emergency: aiSuggestion.is_emergency || false,
       });
       setAutoFilled(true);
     }
@@ -62,6 +64,19 @@ const IssueDetails: React.FC<Props> = ({ onSubmit, onBack, isSubmitting, aiSugge
         </div>
       )}
 
+      {formData.is_emergency && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg flex items-start gap-3">
+          <AlertTriangle className="h-6 w-6 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="text-red-800 font-bold font-headline">Emergency Detected</h3>
+            <p className="text-red-700 text-sm font-body mt-1">
+              This appears to be a critical safety hazard. Please do not rely solely on this app for emergencies. 
+              <strong> Call 100 (Police) or 108 (Ambulance/Emergency) immediately!</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4 font-body">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
@@ -86,6 +101,10 @@ const IssueDetails: React.FC<Props> = ({ onSubmit, onBack, isSubmitting, aiSugge
             <option value="water_leakage">Water Leakage</option>
             <option value="garbage">Garbage Overflow</option>
             <option value="streetlight">Broken Streetlight</option>
+            <option value="fire">Fire Hazard</option>
+            <option value="flood">Flooding</option>
+            <option value="fallen_wire">Fallen Power Line</option>
+            <option value="gas_leak">Gas Leak</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -93,15 +112,22 @@ const IssueDetails: React.FC<Props> = ({ onSubmit, onBack, isSubmitting, aiSugge
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
           <select
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
+            disabled
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed appearance-none"
             value={formData.severity}
-            onChange={(e) => setFormData({...formData, severity: e.target.value})}
+            onChange={(e) => {
+              const severity = e.target.value;
+              setFormData({...formData, severity, is_emergency: severity === 'critical'});
+            }}
           >
             <option value="low">Low (Cosmetic/Minor)</option>
             <option value="medium">Medium (Annoyance)</option>
             <option value="high">High (Property risk)</option>
             <option value="critical">Critical (Safety hazard)</option>
           </select>
+          <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+            <Sparkles className="h-3 w-3" /> Severity is determined automatically by AI.
+          </p>
         </div>
 
         <div>

@@ -11,6 +11,12 @@ class IssueBase(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     image_url: Optional[str] = None
+    upvotes: int = 0
+
+class DuplicateCheckRequest(BaseModel):
+    latitude: float
+    longitude: float
+    issue_type: str
 
 class IssueCreate(IssueBase):
     user_email: str

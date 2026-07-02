@@ -18,6 +18,7 @@ export interface AISuggestion {
   description: string;
   issue_type: string;
   severity: string;
+  is_emergency: boolean;
 }
 
 export const analyzeIssueImage = async (base64DataUrl: string): Promise<AISuggestion | null> => {
@@ -39,8 +40,9 @@ export const analyzeIssueImage = async (base64DataUrl: string): Promise<AISugges
       {
         "title": "A short, precise title (max 6 words)",
         "description": "A detailed but concise description of what you see and why it's a problem",
-        "issue_type": "Must be exactly one of: pothole, water_leakage, garbage, streetlight, other",
-        "severity": "Must be exactly one of: low, medium, high, critical"
+        "issue_type": "Must be exactly one of: pothole, water_leakage, garbage, streetlight, fire, flood, fallen_wire, gas_leak, other",
+        "severity": "Must be exactly one of: low, medium, high, critical",
+        "is_emergency": true or false
       }
       
       Determine severity based on:
@@ -48,6 +50,8 @@ export const analyzeIssueImage = async (base64DataUrl: string): Promise<AISugges
       - medium: Bothersome but not immediately dangerous.
       - high: Risk to property or vehicle damage.
       - critical: Immediate safety hazard to life or limb.
+      
+      If it is a life-threatening emergency (like a fire, active flood, fallen power lines, or gas leak), set is_emergency to true and severity to critical.
     `;
 
     const model = aiClient.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -72,7 +76,7 @@ export const analyzeIssueImage = async (base64DataUrl: string): Promise<AISugges
         const parsed = JSON.parse(cleanedText) as AISuggestion;
         
         // Ensure values match backend enums to prevent database errors
-        const validIssueTypes = ['pothole', 'water_leakage', 'garbage', 'streetlight', 'other'];
+        const validIssueTypes = ['pothole', 'water_leakage', 'garbage', 'streetlight', 'fire', 'flood', 'fallen_wire', 'gas_leak', 'other'];
         const validSeverities = ['low', 'medium', 'high', 'critical'];
         
         if (!parsed.issue_type || !validIssueTypes.includes(parsed.issue_type.toLowerCase())) {
@@ -117,7 +121,7 @@ export const chatWithAI = async (message: string, history: { role: string, parts
                 properties: {
                   title: { type: SchemaType.STRING, description: "Short, precise title for the issue" },
                   description: { type: SchemaType.STRING, description: "Detailed description of the issue" },
-                  issue_type: { type: SchemaType.STRING, description: "Must be exactly one of: pothole, water_leakage, garbage, streetlight, other" },
+                  issue_type: { type: SchemaType.STRING, description: "Must be exactly one of: pothole, water_leakage, garbage, streetlight, fire, flood, fallen_wire, gas_leak, other" },
                   severity: { type: SchemaType.STRING, description: "Must be exactly one of: low, medium, high, critical" },
                 },
                 required: ["title", "description", "issue_type", "severity"]

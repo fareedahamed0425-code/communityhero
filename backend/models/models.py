@@ -1,9 +1,7 @@
-from sqlalchemy import Column, String, Float, Boolean, Integer, DateTime, ForeignKey, Enum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, String, Float, Boolean, Integer, DateTime, ForeignKey, Enum, Uuid
 from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
-from geoalchemy2 import Geometry
 from .database import Base
 import enum
 
@@ -26,7 +24,7 @@ class StatusEnum(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
     
-    user_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100))
     phone = Column(String(20), unique=True)
     email = Column(String(200), unique=True)
@@ -40,8 +38,8 @@ class User(Base):
 class Issue(Base):
     __tablename__ = "issues"
     
-    issue_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    reporter_id = Column(UUID(as_uuid=True), ForeignKey("users.user_id"))
+    issue_id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    reporter_id = Column(Uuid(as_uuid=True), ForeignKey("users.user_id"))
     title = Column(String(200))
     description = Column(String)
     issue_type = Column(String(50))
@@ -51,7 +49,6 @@ class Issue(Base):
     # Location
     latitude = Column(Float)
     longitude = Column(Float)
-    geometry = Column(Geometry('POINT', srid=4326))
     
     # AI Fields
     ai_confidence = Column(Float)
@@ -60,6 +57,7 @@ class Issue(Base):
     public_safety_risk = Column(Boolean, default=False)
     
     image_url = Column(String)
+    upvotes = Column(Integer, default=0)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -106,3 +106,31 @@ export const deleteIssue = async (id: string) => {
     throw error;
   }
 };
+
+export const checkDuplicate = async (latitude: number, longitude: number, issue_type: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/issues/check_duplicate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ latitude, longitude, issue_type })
+    });
+    if (!response.ok) throw new Error('Failed to check duplicates');
+    return await response.json();
+  } catch (error) {
+    console.error('Error checking duplicates:', error);
+    return [];
+  }
+};
+
+export const upvoteIssue = async (id: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/issues/${id}/upvote`, {
+      method: 'POST'
+    });
+    if (!response.ok) throw new Error('Failed to upvote issue');
+    return await response.json();
+  } catch (error) {
+    console.error('Error upvoting issue:', error);
+    throw error;
+  }
+};
